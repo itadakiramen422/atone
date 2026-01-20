@@ -1,0 +1,1739 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AtOne Mirror</title>
+<style>
+    body {
+        margin: 0;
+        font-family: 'Montserrat', sans-serif;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        background: #fff;
+    }
+
+    #start-screen {
+        position: relative;
+        width: 100%;
+        height: 100vh;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .mirror-bg {
+        position: absolute;
+        width: 90%;
+        max-width: 400px;
+        z-index: 0;
+        opacity: 0.15;
+    }
+
+    .camera-left, .camera-right {
+        position: absolute;
+        width: 80px;
+        opacity: 0.8;
+        z-index: 1;
+    }
+
+    .camera-left { left: 5%; top: 20%; }
+    .camera-right { right: 5%; top: 20%; }
+
+    h1, h2 {
+        z-index: 2;
+        margin: 0;
+        letter-spacing: 1px;
+        text-align: center;
+    }
+
+    h1 {
+        font-size: 20px;
+        font-weight: 300;
+        margin-bottom: 8px;
+    }
+
+    h2 {
+        font-size: 42px;
+        font-weight: 800;
+        margin-bottom: 24px;
+    }
+
+    .start-button {
+        z-index: 2;
+        padding: 14px 28px;
+        font-size: 16px;
+        border-radius: 999px;
+        border: none;
+        cursor: pointer;
+        background: #222;
+        color: #fff;
+        font-weight: 700;
+    }
+
+    .start-button[disabled]{
+        opacity: 0.35;
+        cursor: not-allowed;
+    }
+
+    #quiz-screen {
+        display: none;
+        width: 100%;
+        height: 100vh;
+        overflow-y: auto;
+        padding: 50px 16px;
+        box-sizing: border-box;
+        text-align: center;
+    }
+
+    header {
+        font-size: 18px;
+        font-weight: 700;
+        margin-bottom: 22px;
+        color: #222;
+    }
+
+    .question {
+        font-size: 20px;
+        font-weight: 700;
+        margin: 16px 0 18px;
+        color: #222;
+    }
+
+    .result {
+        font-size: 18px;
+        font-weight: 700;
+        margin-top: 28px;
+        color: #222;
+    }
+
+    .pinterest-link {
+        display: inline-block;
+        margin-top: 14px;
+        color: #d62976;
+        font-weight: 700;
+        text-decoration: none;
+    }
+
+    .fade-in-left {
+        animation: fadeInLeft 1.2s ease forwards;
+        opacity: 0;
+    }
+
+    .fade-in-right {
+        animation: fadeInRight 1.2s ease forwards;
+        opacity: 0;
+    }
+
+    @keyframes fadeInLeft {
+        from { transform: translateX(-30px); opacity: 0; }
+        to   { transform: translateX(0); opacity: 1; }
+    }
+
+    @keyframes fadeInRight {
+        from { transform: translateX(30px); opacity: 0; }
+        to   { transform: translateX(0); opacity: 1; }
+    }
+</style>
+</head>
+<body>
+    <div id="start-screen">
+        <img src="mirror.jpg" alt="Mirror" class="mirror-bg">
+        <img src="camera.jpg" alt="Camera Left" class="camera-left">
+        <img src="camera.jpg" alt="Camera Right" class="camera-right">
+        <h1 class="fade-in-left">Hello, New My Style</h1>
+        <h2 class="fade-in-right">AtOne Mirror</h2>
+        <button class="start-button" id="start-btn">Start</button>
+    </div>
+
+    <div id="quiz-screen">
+        <header>AtOne Mirror</header>
+        <div class="question-container" id="quiz-container"></div>
+    </div>
+
+<script>
+const DATA = {
+  "male": [
+    {
+      "style": "ストリート",
+      "age_set": [
+        "10代",
+        "20代",
+        "30代"
+      ],
+      "hair_set": [
+        "パーマ",
+        "センターパート",
+        "マッシュ",
+        "ナチュラル"
+      ],
+      "hobby_set": [
+        "スケボー",
+        "スニーカー",
+        "ヒップホップ"
+      ],
+      "items": [
+        "スニーカー",
+        "パーカー",
+        "キャップ"
+      ],
+      "brands": [
+        "Supreme",
+        "Stüssy",
+        "Nike"
+      ]
+    },
+    {
+      "style": "カジュアル",
+      "age_set": [
+        "10代",
+        "20代",
+        "30代",
+        "40代"
+      ],
+      "hair_set": [
+        "ショート",
+        "ナチュラル",
+        "パーマ"
+      ],
+      "hobby_set": [
+        "カフェ",
+        "映画"
+      ],
+      "items": [
+        "デニム",
+        "スニーカー",
+        "Tシャツ"
+      ],
+      "brands": [
+        "UNIQLO",
+        "GU",
+        "Gap"
+      ]
+    },
+    {
+      "style": "モード",
+      "age_set": [
+        "20代",
+        "30代",
+        "40代"
+      ],
+      "hair_set": [
+        "センターパート",
+        "ウルフカット"
+      ],
+      "hobby_set": [
+        "美術館",
+        "写真",
+        "SNS"
+      ],
+      "items": [
+        "ロングコート",
+        "ワイドパンツ",
+        "ブーツ"
+      ],
+      "brands": [
+        "COMME des GARÇONS",
+        "Yohji Yamamoto"
+      ]
+    },
+    {
+      "style": "ミリタリー",
+      "age_set": [
+        "20代",
+        "30代",
+        "40代"
+      ],
+      "hair_set": [
+        "ベリーショート",
+        "バズカット",
+        "フェードカット"
+      ],
+      "hobby_set": [
+        "アウトドア",
+        "ゲーム"
+      ],
+      "items": [
+        "MA-1ジャケット",
+        "カーゴパンツ",
+        "ミリタリーシャツ"
+      ],
+      "brands": [
+        "Alpha Industries",
+        "Buzz Rickson’s"
+      ]
+    },
+    {
+      "style": "アメカジ",
+      "age_set": [
+        "10代",
+        "20代",
+        "30代"
+      ],
+      "hair_set": [
+        "ショート",
+        "パーマ"
+      ],
+      "hobby_set": [
+        "ツーリング",
+        "アウトドア",
+        "古着"
+      ],
+      "items": [
+        "デニム",
+        "チェック",
+        "レザージャケット"
+      ],
+      "brands": [
+        "Levi’s",
+        "Lee",
+        "Wrangler",
+        "Red Wing"
+      ]
+    },
+    {
+      "style": "トラッド",
+      "age_set": [
+        "30代",
+        "40代",
+        "50代"
+      ],
+      "hair_set": [
+        "クラシック",
+        "七三分け"
+      ],
+      "hobby_set": [
+        "ゴルフ",
+        "美術館"
+      ],
+      "items": [
+        "ジャケット",
+        "ローファー"
+      ],
+      "brands": [
+        "Brooks Brothers",
+        "Ralph Lauren"
+      ]
+    },
+    {
+      "style": "プレッピー",
+      "age_set": [
+        "20代",
+        "30代"
+      ],
+      "hair_set": [
+        "ショート",
+        "七三分け"
+      ],
+      "hobby_set": [
+        "カフェ",
+        "映画",
+        "勉強"
+      ],
+      "items": [
+        "カーディガン",
+        "チノパン",
+        "ローファー"
+      ],
+      "brands": [
+        "POLO",
+        "BEAMS",
+        "UNIQLO"
+      ]
+    },
+    {
+      "style": "ワーク",
+      "age_set": [
+        "20代",
+        "30代",
+        "40代",
+        "50代"
+      ],
+      "hair_set": [
+        "ショート",
+        "ナチュラル"
+      ],
+      "hobby_set": [
+        "DIY",
+        "バイク",
+        "アウトドア"
+      ],
+      "items": [
+        "ワークパンツ",
+        "オーバーオール"
+      ],
+      "brands": [
+        "Dickies",
+        "Carhartt",
+        "Ben Davis"
+      ]
+    },
+    {
+      "style": "サーフ",
+      "age_set": [
+        "20代",
+        "30代",
+        "40代",
+        "50代"
+      ],
+      "hair_set": [
+        "ロング",
+        "パーマ",
+        "ラフ"
+      ],
+      "hobby_set": [
+        "サーフィン",
+        "海",
+        "キャンプ"
+      ],
+      "items": [
+        "ボードショーツ",
+        "Tシャツ",
+        "サンダル",
+        "パーカー"
+      ],
+      "brands": [
+        "Billabong",
+        "Quiksilver",
+        "Hurley"
+      ]
+    },
+    {
+      "style": "ロック",
+      "age_set": [
+        "20代",
+        "30代",
+        "40代",
+        "50代"
+      ],
+      "hair_set": [
+        "ウルフカット",
+        "ロング",
+        "パーマ"
+      ],
+      "hobby_set": [
+        "音楽",
+        "ライブ",
+        "ギター"
+      ],
+      "items": [
+        "ライダースジャケット",
+        "スキニーパンツ",
+        "ブーツ",
+        "バンドTシャツ"
+      ],
+      "brands": [
+        "Schott",
+        "Saint Laurent"
+      ]
+    },
+    {
+      "style": "スポーツ",
+      "age_set": [
+        "10代",
+        "20代",
+        "30代",
+        "40代"
+      ],
+      "hair_set": [
+        "ショート",
+        "ツーブロック"
+      ],
+      "hobby_set": [
+        "筋トレ",
+        "ランニング",
+        "サッカー"
+      ],
+      "items": [
+        "ジャージ",
+        "スニーカー",
+        "スポーツキャップ"
+      ],
+      "brands": [
+        "Nike",
+        "Adidas",
+        "Puma",
+        "Under Armour"
+      ]
+    },
+    {
+      "style": "ノームコア",
+      "age_set": [
+        "20代",
+        "30代",
+        "40代",
+        "50代"
+      ],
+      "hair_set": [
+        "ショート",
+        "センターパート",
+        "ナチュラル"
+      ],
+      "hobby_set": [
+        "読書",
+        "カフェ",
+        "デザイン"
+      ],
+      "items": [
+        "シンプルTシャツ",
+        "ストレートパンツ",
+        "スニーカー"
+      ],
+      "brands": [
+        "UNIQLO",
+        "COS",
+        "MUJI"
+      ]
+    },
+    {
+      "style": "ビジネスカジュアル",
+      "age_set": [
+        "30代",
+        "40代",
+        "50代"
+      ],
+      "hair_set": [
+        "ショート",
+        "七三分け",
+        "ナチュラル"
+      ],
+      "hobby_set": [
+        "仕事",
+        "カフェ",
+        "旅行"
+      ],
+      "items": [
+        "ジャケット",
+        "スラックス",
+        "革靴",
+        "シャツ"
+      ],
+      "brands": [
+        "Theory",
+        "Paul Smith",
+        "United Arrows"
+      ]
+    },
+    {
+      "style": "クラシック",
+      "age_set": [
+        "30代",
+        "40代",
+        "50代"
+      ],
+      "hair_set": [
+        "クラシック",
+        "七三分け"
+      ],
+      "hobby_set": [
+        "読書",
+        "美術館",
+        "カフェ"
+      ],
+      "items": [
+        "スーツ",
+        "トレンチコート",
+        "革靴"
+      ],
+      "brands": [
+        "Burberry",
+        "Brooks Brothers"
+      ]
+    },
+    {
+      "style": "ラグジュアリー",
+      "age_set": [
+        "30代",
+        "40代",
+        "50代"
+      ],
+      "hair_set": [
+        "クラシック",
+        "オールバック"
+      ],
+      "hobby_set": [
+        "高級レストラン",
+        "旅行"
+      ],
+      "items": [
+        "テーラードジャケット",
+        "レザーシューズ",
+        "ハイブランドバッグ"
+      ],
+      "brands": [
+        "Gucci",
+        "Louis Vuitton",
+        "Prada"
+      ]
+    },
+    {
+      "style": "ルード",
+      "age_set": [
+        "20代",
+        "30代",
+        "40代"
+      ],
+      "hair_set": [
+        "バズカット",
+        "フェード",
+        "パーマ"
+      ],
+      "hobby_set": [
+        "バイク",
+        "ライブ",
+        "古着"
+      ],
+      "items": [
+        "ライダースジャケット",
+        "ワークパンツ",
+        "ブーツ",
+        "プリントTシャツ"
+      ],
+      "brands": [
+        "Schott",
+        "Dickies"
+      ]
+    },
+    {
+      "style": "キレイめカジュアル",
+      "age_set": [
+        "20代",
+        "30代",
+        "40代",
+        "50代"
+      ],
+      "hair_set": [
+        "ナチュラル",
+        "センターパート",
+        "ショート"
+      ],
+      "hobby_set": [
+        "カフェ",
+        "映画",
+        "旅行"
+      ],
+      "items": [
+        "ジャケット",
+        "スラックス",
+        "ローファー",
+        "シャツ"
+      ],
+      "brands": [
+        "BEAMS",
+        "UNITED ARROWS",
+        "SHIPS"
+      ]
+    },
+    {
+      "style": "ラグジュアリーストリート",
+      "age_set": [
+        "20代",
+        "30代",
+        "40代"
+      ],
+      "hair_set": [
+        "マッシュ",
+        "センターパート",
+        "パーマ"
+      ],
+      "hobby_set": [
+        "スニーカー",
+        "音楽",
+        "SNS"
+      ],
+      "items": [
+        "オーバーサイズパーカー",
+        "スニーカー（ハイブランド）"
+      ],
+      "brands": [
+        "Balenciaga",
+        "Off-White",
+        "Fear of God"
+      ]
+    },
+    {
+      "style": "シティーボーイ",
+      "age_set": [
+        "20代",
+        "30代",
+        "40代"
+      ],
+      "hair_set": [
+        "センターパート",
+        "ナチュラル",
+        "マッシュ"
+      ],
+      "hobby_set": [
+        "カフェ",
+        "本",
+        "映画"
+      ],
+      "items": [
+        "オーバーサイズ",
+        "スニーカー"
+      ],
+      "brands": [
+        "URALEE",
+        "COMOLI",
+        "Graphpaper"
+      ]
+    }
+  ],
+  "female": [
+    {
+      "style": "ベーシック",
+      "age_set": [
+        "20代",
+        "30代",
+        "40代",
+        "50代"
+      ],
+      "hair_set": [
+        "ボブ",
+        "ストレート",
+        "前髪あり"
+      ],
+      "hobby_set": [
+        "カフェ",
+        "映画",
+        "読書"
+      ],
+      "items": [
+        "無地",
+        "デニム",
+        "シャツ"
+      ],
+      "brands": [
+        "UNIQLO",
+        "MUJI",
+        "GU"
+      ]
+    },
+    {
+      "style": "アメカジ",
+      "age_set": [
+        "10代",
+        "20代",
+        "30代"
+      ],
+      "hair_set": [
+        "外はねボブ",
+        "ハーフアップ",
+        "パーマ"
+      ],
+      "hobby_set": [
+        "古着",
+        "キャンプ",
+        "ドライブ"
+      ],
+      "items": [
+        "デニム",
+        "キャップ",
+        "デニムジャケット",
+        "チェックシャツ"
+      ],
+      "brands": [
+        "Levi’s",
+        "Lee",
+        "Dickies"
+      ]
+    },
+    {
+      "style": "モードカジュアル",
+      "age_set": [
+        "20代",
+        "30代",
+        "40代"
+      ],
+      "hair_set": [
+        "ストレート",
+        "シンプル",
+        "切りっぱなしボブ"
+      ],
+      "hobby_set": [
+        "美術館",
+        "SNS"
+      ],
+      "items": [
+        "モノトーン",
+        "個性的シルエット"
+      ],
+      "brands": [
+        "COS",
+        "ZARA",
+        "Acne Studios"
+      ]
+    },
+    {
+      "style": "スポーツカジュアル",
+      "age_set": [
+        "10代",
+        "20代",
+        "30代"
+      ],
+      "hair_set": [
+        "ポニーテール",
+        "ショート"
+      ],
+      "hobby_set": [
+        "ジム",
+        "スポーツ"
+      ],
+      "items": [
+        "機能素材",
+        "スニーカー"
+      ],
+      "brands": [
+        "Nike",
+        "Adidas",
+        "New Balance"
+      ]
+    },
+    {
+      "style": "メンズライク",
+      "age_set": [
+        "10代",
+        "20代",
+        "30代",
+        "40代"
+      ],
+      "hair_set": [
+        "ショートボブ",
+        "センターパート"
+      ],
+      "hobby_set": [
+        "ライブ",
+        "古着"
+      ],
+      "items": [
+        "ジャケット",
+        "パンツスタイル"
+      ],
+      "brands": [
+        "COMOLI",
+        "AURALEE",
+        "YAECA"
+      ]
+    },
+    {
+      "style": "アウトドア",
+      "age_set": [
+        "20代",
+        "30代",
+        "40代",
+        "50代"
+      ],
+      "hair_set": [
+        "ローポニー",
+        "ストレート"
+      ],
+      "hobby_set": [
+        "山",
+        "アウトドア"
+      ],
+      "items": [
+        "マウンテンパーカー",
+        "カーゴパンツ"
+      ],
+      "brands": [
+        "THE NORTH FACE",
+        "Patagonia",
+        "Columbia"
+      ]
+    },
+    {
+      "style": "テック系",
+      "age_set": [
+        "20代",
+        "30代",
+        "40代"
+      ],
+      "hair_set": [
+        "ストレート",
+        "ミニボブ"
+      ],
+      "hobby_set": [
+        "ガジェット",
+        "ゲーム"
+      ],
+      "items": [
+        "機能素材",
+        "シンプル"
+      ],
+      "brands": [
+        "UNIQLO",
+        "ZARA",
+        "Nike"
+      ]
+    },
+    {
+      "style": "きれいめ",
+      "age_set": [
+        "20代",
+        "30代",
+        "40代",
+        "50代"
+      ],
+      "hair_set": [
+        "ロング",
+        "巻き髪"
+      ],
+      "hobby_set": [
+        "ショッピング",
+        "旅行"
+      ],
+      "items": [
+        "ブラウス",
+        "スカート"
+      ],
+      "brands": [
+        "FRAY I.D",
+        "Mila Owen",
+        "NATURAL BEAUTY BASIC"
+      ]
+    },
+    {
+      "style": "エレガンス",
+      "age_set": [
+        "30代",
+        "40代",
+        "50代"
+      ],
+      "hair_set": [
+        "アップスタイル",
+        "巻き髪"
+      ],
+      "hobby_set": [
+        "美術館",
+        "高級レストラン"
+      ],
+      "items": [
+        "ワンピース",
+        "ヒール",
+        "バッグ"
+      ],
+      "brands": [
+        "FOXEY",
+        "Tory Burch",
+        "Max Mara"
+      ]
+    },
+    {
+      "style": "ガーリー",
+      "age_set": [
+        "10代",
+        "20代"
+      ],
+      "hair_set": [
+        "ツイン",
+        "巻き髪",
+        "前髪あり",
+        "ガーリー"
+      ],
+      "hobby_set": [
+        "カフェ巡り",
+        "SNS"
+      ],
+      "items": [
+        "ワンピース",
+        "フリル",
+        "パンプス"
+      ],
+      "brands": [
+        "snidel",
+        "titty&Co.",
+        "Lily Brown"
+      ]
+    },
+    {
+      "style": "オフィスカジュアル",
+      "age_set": [
+        "20代",
+        "30代",
+        "40代",
+        "50代"
+      ],
+      "hair_set": [
+        "ローポニー",
+        "ストレート"
+      ],
+      "hobby_set": [
+        "読書",
+        "映画",
+        "居酒屋"
+      ],
+      "items": [
+        "ジャケット",
+        "スラックス",
+        "パンプス"
+      ],
+      "brands": [
+        "UNITED ARROWS",
+        "TOMORROWLAND",
+        "PLST"
+      ]
+    },
+    {
+      "style": "マニッシュ",
+      "age_set": [
+        "20代",
+        "30代",
+        "40代"
+      ],
+      "hair_set": [
+        "ショート",
+        "センターパート"
+      ],
+      "hobby_set": [
+        "カフェ",
+        "映画",
+        "読書"
+      ],
+      "items": [
+        "ジャケット",
+        "スラックス"
+      ],
+      "brands": [
+        "BEAMS",
+        "URBAN RESEARCH",
+        "IENA"
+      ]
+    },
+    {
+      "style": "デザイナーズ",
+      "age_set": [
+        "20代",
+        "30代",
+        "40代"
+      ],
+      "hair_set": [
+        "ストレート"
+      ],
+      "hobby_set": [
+        "美術館",
+        "写真",
+        "SNS"
+      ],
+      "items": [
+        "ロングコート",
+        "ブーツ"
+      ],
+      "brands": [
+        "COMME des GARÇONS",
+        "Yohji Yamamoto",
+        "MM6"
+      ]
+    },
+    {
+      "style": "トラッド",
+      "age_set": [
+        "30代",
+        "40代",
+        "50代"
+      ],
+      "hair_set": [
+        "クラシックボブ",
+        "まとめ髪"
+      ],
+      "hobby_set": [
+        "ゴルフ",
+        "美術館"
+      ],
+      "items": [
+        "ジャケット",
+        "ローファー"
+      ],
+      "brands": [
+        "Brooks Brothers",
+        "Ralph Lauren"
+      ]
+    },
+    {
+      "style": "シティガール",
+      "age_set": [
+        "20代",
+        "30代",
+        "40代"
+      ],
+      "hair_set": [
+        "ボブ",
+        "ミディアム",
+        "レイヤー"
+      ],
+      "hobby_set": [
+        "カフェ",
+        "読書",
+        "映画"
+      ],
+      "items": [
+        "シャツ",
+        "チノパン",
+        "トートバッグ"
+      ],
+      "brands": [
+        "BEAMS",
+        "URBAN RESEARCH",
+        "IENA"
+      ]
+    },
+    {
+      "style": "ノームコア",
+      "age_set": [
+        "20代",
+        "30代",
+        "40代",
+        "50代"
+      ],
+      "hair_set": [
+        "ショート",
+        "ボブ",
+      ],
+      "hobby_set": [
+        "読書",
+        "カフェ",
+        "デザイン"
+      ],
+      "items": [
+        "白シャツ",
+        "黒パンツ",
+        "スニーカー"
+      ],
+      "brands": [
+        "MUJI",
+        "COS",
+        "UNIQLO"
+      ]
+    },
+    {
+      "style": "プレッピー",
+      "age_set": [
+        "20代",
+        "30代"
+      ],
+      "hair_set": [
+        "ボブ",
+        "まとめ髪"
+      ],
+      "hobby_set": [
+        "カフェ",
+        "映画",
+        "勉強"
+      ],
+      "items": [
+        "カーディガン",
+        "チノパン",
+        "ローファー"
+      ],
+      "brands": [
+        "POLO",
+        "BEAMS",
+        "UNIQLO"
+      ]
+    },
+    {
+      "style": "モノトーン",
+      "age_set": [
+        "20代",
+        "30代",
+        "40代"
+      ],
+      "hair_set": [
+        "ストレート",
+        "黒髪"
+      ],
+      "hobby_set": [
+        "美術館",
+        "SNS"
+      ],
+      "items": [
+        "モノトーン",
+        "個性的"
+      ],
+      "brands": [
+        "ZARA",
+        "COS",
+        "Acne Studios"
+      ]
+    },
+    {
+      "style": "韓国系",
+      "age_set": [
+        "10代",
+        "20代",
+        "30代"
+      ],
+      "hair_set": [
+        "韓国風",
+        "ハイトーン"
+      ],
+      "hobby_set": [
+        "韓国ドラマ",
+        "K-POP",
+        "美容"
+      ],
+      "items": [
+        "オーバーサイズジャケット",
+        "スラックス"
+      ],
+      "brands": [
+        "SPAO",
+        "8seconds",
+        "ZARA"
+      ]
+    }
+  ]
+};
+// ------------------------------
+// Group definitions (UI only)
+// ------------------------------
+const GROUPS = {
+  female: {
+    hobby: [
+      { name: "アウトドア", items: ["山","アウトドア","キャンプ","ドライブ"] },
+      { name: "インドア", items: ["映画","読書","ゲーム","SNS"] },
+      { name: "カフェ・食", items: ["カフェ","カフェ巡り","スイーツ","居酒屋","高級レストラン"] },
+      { name: "アクティブ", items: ["ジム","スポーツ","ゴルフ"] },
+      { name: "ショッピング・美容", items: ["ショッピング","メイク"] },
+      { name: "カルチャー・推し活", items: ["美術館","ライブ","古着","推し","韓国","旅行","ガジェット"] }
+    ],
+    hair: [
+      { name: "ショート・ボブ系", items: ["ショート","ショートボブ","ボブ","ミニボブ","切りっぱなしボブ","外はねボブ","ミディアム"
+      ] },
+      { name: "ロング系", items: ["ロング","黒髪","ハイトーン"] },
+      { name: "ストレート・分け目", items: ["ストレート","センターパート","シンプル"] },
+      { name: "アレンジ", items: ["パーマ","巻き髪","ポニーテール","ローポニー","まとめ髪","アップスタイル","ハーフアップ","ツイン","韓国風","レイヤー"] },
+      { name: "テイスト", items: ["ガーリー","個性的","アート系","トレンド重視","前髪あり"] }
+    ]
+  },
+
+  male: {
+    hobby: [
+      { name: "アウトドア", items: ["アウトドア","海","ツーリング","ドライブ","バイク"] },
+      { name: "インドア", items: ["映画","読書","ゲーム","SNS"] },
+      { name: "アクティブ", items: ["ジム","スポーツ","ランニング","ゴルフ"] },
+      { name: "ストリート・カルチャー", items: ["ヒップホップ","音楽","ライブ","写真","スケボー"] },
+      { name: "ファッション嗜好", items: ["スニーカー","古着","ハイブランド"] },
+      { name: "ライフスタイル", items: ["DIY","お酒","高級レストラン","旅行","タトゥー"] }
+    ],
+    hair: [
+      { name: "ベリーショート・刈り上げ", items: ["ベリーショート","バズカット","フェードカット","スパイキーショート"] },
+      { name: "ショート〜ミディアム", items: ["ショート","マッシュ","ウルフカット","ロング"] },
+      { name: "セット・分け目", items: ["パーマ","センターパート","七三分け","オールバック","アップバング","コンマヘア","ナチュラル"] }
+    ]
+  }
+};
+
+// ------------------------------
+// Pinterest search keywords (gender-specific)
+// ------------------------------
+const PINTEREST_KEYWORDS = {
+  male: {
+    "ストリート": "men street fashion outfit",
+    "カジュアル": "men casual outfit simple",
+    "モード": "men mode fashion minimal",
+    "ミリタリー": "ミリタリーファッション",
+    "アメカジ": "アメカジ系 メンズ",
+    "トラッド": "men traditional style outfit",
+    "プレッピー": "men preppy style outfit",
+    "ワーク": "ワーク系 ファッション",
+    "サーフ": "サーファー ファッション",
+    "ロック": "men rock style fashion",
+    "スポーツ": "men sporty outfit fashion",
+    "ノームコア": "men normcore outfit minimal",
+    "ビジネスカジュアル": "men business casual outfit",
+    "クラシック": "men classic fashion outfit",
+    "ラグジュアリー": "men luxury fashion outfit",
+    "ルード": "men rude style fashion",
+    "キレイめカジュアル": "men clean casual outfit",
+    "ラグジュアリーストリート": "men luxury streetwear outfit",
+    "シティーボーイ": "シティーボーイ ファッション"
+  },
+  female: {
+    "ベーシック": "women basic outfit minimalist",
+    "アメカジ": "アメカジ系 レディース",
+    "モードカジュアル": "women mode casual fashion",
+    "スポーツカジュアル": "women sporty casual outfit",
+    "メンズライク": "メンズライク",
+    "アウトドア": "women outdoor fashion outfit",
+    "テック系": "women techwear fashion outfit",
+    "きれいめ": "women clean elegant outfit",
+    "エレガンス": "women elegant fashion outfit",
+    "ガーリー": "women girly fashion outfit",
+    "オフィスカジュアル": "women office casual outfit",
+    "マニッシュ": "women mannish style outfit",
+    "デザイナーズ": "women designer fashion outfit",
+    "トラッド": "トラッド",
+    "シティガール": "シティーガール ファッション",
+    "ノームコア": "women normcore outfit minimal",
+    "プレッピー": "women preppy style outfit",
+    "モノトーン": "women monochrome outfit fashion",
+    "韓国系": "韓国系ファッション"
+  }
+};
+
+// DATAに search_keyword を付与（Excel由来のstyle表示はそのまま）
+["male","female"].forEach(g => {
+  (DATA[g] || []).forEach(row => {
+    row.search_keyword = (PINTEREST_KEYWORDS[g] && PINTEREST_KEYWORDS[g][row.style])
+      ? PINTEREST_KEYWORDS[g][row.style]
+      : row.style; // 未定義なら系統名で検索
+  });
+});
+
+
+function shuffleArray(arr){
+  return arr
+    .map(v => ({ v, r: Math.random() }))
+    .sort((a,b) => a.r - b.r)
+    .map(x => x.v);
+}
+
+function getAllHobbiesByGender(){
+  const rows = getRowsForGender();
+  return uniqOptions(rows, "hobby_set");
+}
+
+
+// ------------------------------
+// Elements
+// ------------------------------
+const startScreen = document.getElementById("start-screen");
+const quizScreen  = document.getElementById("quiz-screen");
+const startBtn    = document.getElementById("start-btn");
+const container   = document.getElementById("quiz-container");
+
+startBtn.addEventListener("click", () => {
+  startScreen.style.display = "none";
+  quizScreen.style.display = "block";
+  quizScreen.scrollTop = 0;
+  window.scrollTo(0, 0);
+  initQuiz();
+});
+
+// ------------------------------
+// Quiz state
+// ------------------------------
+const state = {
+  step: 0,
+  gender: null,   // 'male' | 'female'
+  age: null,      // '10代'..'50代'
+  hair: [],       // array of strings (multi)
+  hobby: []       // array of strings (multi)
+};
+
+const AGE_OPTIONS = ["10代","20代","30代","40代","50代"];
+
+const steps = [
+  { key: "gender", label: "Step 1 / 4", question: "性別を選択してください", options: ["女性","男性"], multi: false },
+  { key: "age",    label: "Step 2 / 4", question: "年齢層を選択してください", options: AGE_OPTIONS, multi: false },
+  { key: "hair",   label: "Step 3 / 4", question: "髪型を選択してください（複数選択可）", optionsFrom: "hair_set", multi: true },
+  { key: "hobby",  label: "Step 4 / 4", question: "趣味を選択してください（複数選択可）", optionsFrom: "hobby_set", multi: true },
+];
+
+function clearContainer(){
+  container.innerHTML = "";
+}
+
+function makeOptionButton(text, selected){
+  const btn = document.createElement("div");
+  btn.className = "option-btn";
+  btn.textContent = text;
+  btn.style.padding = "14px 16px";
+  btn.style.margin = "10px auto";
+  btn.style.maxWidth = "520px";
+  btn.style.borderRadius = "16px";
+  btn.style.border = selected ? "1px solid #222" : "1px solid #ddd";
+  btn.style.cursor = "pointer";
+  btn.style.userSelect = "none";
+  btn.style.fontSize = "16px";
+  btn.style.textAlign = "center";
+  btn.style.backgroundColor = selected ? "#222" : "#fff";
+  btn.style.color = selected ? "#fff" : "#222";
+  return btn;
+}
+
+function hasIntersection(a, b){
+  if(!Array.isArray(a) || !Array.isArray(b) || a.length === 0 || b.length === 0) return false;
+  const s = new Set(a);
+  return b.some(x => s.has(x));
+}
+
+function toggleInArray(arr, value){
+  const idx = arr.indexOf(value);
+  if(idx >= 0){
+    arr.splice(idx, 1);
+  } else {
+    arr.push(value);
+  }
+}
+
+function getRowsForGender(){
+  if(!state.gender) return [];
+  return DATA[state.gender] || [];
+}
+
+function rowsMatchingAge(rows){
+  if(!state.age) return rows;
+  return rows.filter(r => (r.age_set || []).includes(state.age));
+}
+
+function uniqOptions(rows, setKey){
+  const s = new Set();
+  rows.forEach(r => (r[setKey] || []).forEach(v => s.add(v)));
+  return Array.from(s);
+}
+
+function getOptionsForStep(stepKey){
+  const rows = getRowsForGender();
+
+  if(stepKey === "hair"){
+    const ageRows = rowsMatchingAge(rows);
+    const opts = uniqOptions(ageRows, "hair_set");
+    return opts.length ? opts : uniqOptions(rows, "hair_set");
+  }
+
+  if(stepKey === "hobby"){
+    return uniqOptions(rows, "hobby_set");
+  }
+
+  return [];
+}
+
+// ------------------------------
+// Quiz core (copy-paste block)
+// ------------------------------
+function initQuiz(){
+  state.step = 0;
+  state.gender = null;
+  state.age = null;
+  state.hair = [];
+  state.hobby = [];
+  renderStep();
+}
+
+function renderStep(){
+  clearContainer();
+
+  const stepDef = steps[state.step];
+
+  const stepElem = document.createElement("div");
+  stepElem.className = "result";
+  stepElem.style.marginTop = "0";
+  stepElem.style.fontSize = "16px";
+  stepElem.style.color = "#777";
+  stepElem.textContent = stepDef.label;
+  container.appendChild(stepElem);
+
+  const qElem = document.createElement("div");
+  qElem.className = "question";
+  qElem.textContent = stepDef.question;
+  container.appendChild(qElem);
+
+  const opts = stepDef.options ? stepDef.options : getOptionsForStep(stepDef.key);
+
+  // hair / hobby grouped UI
+  if(stepDef.key === "hair" || stepDef.key === "hobby"){
+    const g = state.gender; // 'male' | 'female'
+    const groupDef = (GROUPS[g] && GROUPS[g][stepDef.key]) ? GROUPS[g][stepDef.key] : [];
+    const optSet = new Set(opts);
+    const used = new Set();
+
+    groupDef.forEach(group => {
+      const items = (group.items || []).filter(x => optSet.has(x));
+      if(items.length === 0) return;
+      items.forEach(x => used.add(x));
+
+      const title = document.createElement("div");
+title.textContent = group.name;
+title.style.margin = "28px 0 10px";
+title.style.fontWeight = "800";
+title.style.fontSize = "18px";
+title.style.color = "#111";
+title.style.letterSpacing = "0.5px";
+title.style.borderLeft = "4px solid #222";
+title.style.paddingLeft = "10px";
+container.appendChild(title);
+
+      const wrap = document.createElement("div");
+
+      items.forEach(opt => {
+        const selected = (stepDef.key === "hair")
+          ? state.hair.includes(opt)
+          : state.hobby.includes(opt);
+
+        const btn = makeOptionButton(opt, selected);
+
+        btn.onclick = () => {
+          if(stepDef.key === "hair"){
+            toggleInArray(state.hair, opt);
+            state.hobby = [];
+          } else {
+            toggleInArray(state.hobby, opt);
+          }
+          renderStep();
+        };
+
+        wrap.appendChild(btn);
+      });
+
+      container.appendChild(wrap);
+    });
+
+    // others
+    const others = opts.filter(x => !used.has(x));
+    if(others.length > 0){
+      const title = document.createElement("div");
+      title.textContent = "その他";
+      title.style.margin = "22px 0 8px";
+      title.style.fontWeight = "700";
+      title.style.color = "#444";
+      container.appendChild(title);
+
+      const wrap = document.createElement("div");
+      others.forEach(opt => {
+        const selected = (stepDef.key === "hair")
+          ? state.hair.includes(opt)
+          : state.hobby.includes(opt);
+
+        const btn = makeOptionButton(opt, selected);
+
+        btn.onclick = () => {
+          if(stepDef.key === "hair"){
+            toggleInArray(state.hair, opt);
+            state.hobby = [];
+          } else {
+            toggleInArray(state.hobby, opt);
+          }
+          renderStep();
+        };
+
+        wrap.appendChild(btn);
+      });
+
+      container.appendChild(wrap);
+    }
+
+  } else {
+    // gender / age (single select, NOT auto-advance)
+    const optionsDiv = document.createElement("div");
+
+    opts.forEach(opt => {
+      const selected =
+        (stepDef.key === "gender" && ((state.gender === "female" && opt === "女性") || (state.gender === "male" && opt === "男性"))) ||
+        (stepDef.key === "age"    && state.age === opt);
+
+      const btn = makeOptionButton(opt, selected);
+
+      btn.onclick = () => {
+        if(stepDef.key === "gender"){
+          state.gender = (opt === "男性") ? "male" : "female";
+          state.age = null;
+          state.hair = [];
+          state.hobby = [];
+          renderStep();
+          return;
+        }
+
+        if(stepDef.key === "age"){
+          state.age = opt;
+          state.hair = [];
+          state.hobby = [];
+          renderStep();
+          return;
+        }
+      };
+
+      optionsDiv.appendChild(btn);
+    });
+
+    container.appendChild(optionsDiv);
+  }
+
+  renderNavButtons();
+}
+
+function canGoNext(){
+  const key = steps[state.step].key;
+  if(key === "gender") return !!state.gender;
+  if(key === "age")    return !!state.age;
+  if(key === "hair")   return state.hair.length > 0;
+  if(key === "hobby")  return state.hobby.length > 0;
+  return false;
+}
+
+function renderNavButtons(){
+  const nav = document.createElement("div");
+  nav.style.marginTop = "24px";
+  nav.style.display = "flex";
+  nav.style.justifyContent = "space-between";
+  nav.style.maxWidth = "520px";
+  nav.style.marginLeft = "auto";
+  nav.style.marginRight = "auto";
+
+  const back = document.createElement("button");
+  back.className = "start-button";
+  back.textContent = "Back";
+  back.style.background = "#fff";
+  back.style.color = "#222";
+  back.style.border = "1px solid #222";
+  back.disabled = state.step === 0;
+
+  back.onclick = () => {
+    if(state.step > 0){
+      state.step -= 1;
+      renderStep();
+    }
+  };
+
+  const next = document.createElement("button");
+  next.className = "start-button";
+  next.textContent = state.step === steps.length - 1 ? "結果を見る" : "Next";
+  next.disabled = !canGoNext();
+
+  next.onclick = () => {
+    if(state.step === steps.length - 1){
+      renderResults();
+    } else {
+      state.step += 1;
+      renderStep();
+    }
+  };
+
+  nav.appendChild(back);
+  nav.appendChild(next);
+  container.appendChild(nav);
+}
+
+
+
+
+// ------------------------------
+// Scoring (SCC stays the same)
+// ------------------------------
+function overlapFraction(selectedArr, rowArr){
+  if(!Array.isArray(selectedArr) || selectedArr.length === 0) return 0;
+  const rowSet = new Set(Array.isArray(rowArr) ? rowArr : []);
+  let hit = 0;
+  for(const v of selectedArr){
+    if(rowSet.has(v)) hit += 1;
+  }
+  return hit / selectedArr.length; // 0.0〜1.0
+}
+
+function scoreRow(row){
+  const ageScore = (state.age && (row.age_set || []).includes(state.age)) ? 1 : 0;
+  const hairScore  = overlapFraction(state.hair,  row.hair_set);  // 0〜1
+  const hobbyScore = overlapFraction(state.hobby, row.hobby_set); // 0〜1
+
+  const score = ageScore + hairScore + hobbyScore; // 0.0〜3.0
+  const pct = Math.round((score / 3) * 100);
+  return { score, pct };
+}
+
+function renderResults(){
+  clearContainer();
+
+  const rows = getRowsForGender();
+  const scored = rows.map((r, idx) => {
+    const s = scoreRow(r);
+    return { ...r, _score: s.score, _pct: s.pct, _idx: idx };
+  }).sort((a,b) => b._score - a._score || b._pct - a._pct || a._idx - b._idx);
+
+  const top = scored.slice(0, 3);
+
+  const title = document.createElement("div");
+  title.className = "question";
+  title.textContent = "あなたに合いそうなスタイル（上位3件）";
+  container.appendChild(title);
+
+  top.forEach((r, idx) => {
+    const box = document.createElement("div");
+    box.style.border = "1px solid #eee";
+    box.style.borderRadius = "16px";
+    box.style.padding = "16px";
+    box.style.margin = "10px auto";
+    box.style.maxWidth = "520px";
+    box.style.textAlign = "left";
+
+    const h = document.createElement("div");
+    h.style.fontSize = "18px";
+    h.style.fontWeight = "700";
+    h.textContent = `${idx+1}. ${r.style}`;
+
+    const p1 = document.createElement("div");
+    p1.style.marginTop = "8px";
+    p1.style.fontSize = "14px";
+    p1.style.color = "#555";
+    p1.textContent = `一致度: ${r._pct}%`;
+
+    const p2 = document.createElement("div");
+    p2.style.marginTop = "8px";
+    p2.style.fontSize = "14px";
+    p2.style.color = "#222";
+    const items = (r.items || []).join("、");
+    p2.textContent = `定番アイテム: ${items || "—"}`;
+
+    const p3 = document.createElement("div");
+    p3.style.marginTop = "6px";
+    p3.style.fontSize = "14px";
+    p3.style.color = "#222";
+    const brands = (r.brands || []).join("、");
+    p3.textContent = `ブランド: ${brands || "—"}`;
+
+    const link = document.createElement("a");
+    link.className = "pinterest-link";
+    link.style.display = "inline-block";
+    link.style.marginTop = "10px";
+   link.href = "https://www.pinterest.com/search/pins/?q=" + encodeURIComponent(r.search_keyword || r.style);
+
+    link.target = "_blank";
+    link.textContent = "Pinterestで見る";
+
+    box.appendChild(h);
+    box.appendChild(p1);
+    box.appendChild(p2);
+    box.appendChild(p3);
+    box.appendChild(link);
+    container.appendChild(box);
+  });
+
+  const actions = document.createElement("div");
+  actions.style.marginTop = "26px";
+  actions.style.display = "flex";
+  actions.style.justifyContent = "center";
+  actions.style.gap = "12px";
+  actions.style.flexWrap = "wrap";
+
+  const restart = document.createElement("button");
+  restart.className = "start-button";
+  restart.textContent = "もう一度診断する";
+  restart.onclick = initQuiz;
+
+  const backToStart = document.createElement("button");
+  backToStart.className = "start-button";
+  backToStart.textContent = "トップへ戻る";
+  backToStart.style.backgroundColor = "#fff";
+  backToStart.style.color = "#222";
+  backToStart.style.border = "1px solid #222";
+  backToStart.onclick = () => {
+    quizScreen.style.display = "none";
+    quizScreen.scrollTop = 0;
+    window.scrollTo(0, 0);
+    startScreen.style.display = "flex";
+  };
+
+  actions.appendChild(backToStart);
+  actions.appendChild(restart);
+  container.appendChild(actions);
+}
+
+quizScreen.style.display = "none";
+</script>
+
+</body>
+</html>
